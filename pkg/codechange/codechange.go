@@ -3,11 +3,10 @@ package codechange
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"sort"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 type CodeChange struct {
@@ -23,20 +22,20 @@ type CodeChange struct {
 	Delete int
 }
 
+// FileApplyChanges applies the changes to file filename. It does not edit the file, the expected file content is returned.
 func FileApplyChanges(filename string, changes []CodeChange) ([]byte, error) {
 	sort.SliceStable(changes, func(i, j int) bool {
 		return changes[i].Offset < changes[j].Offset
 	})
 
-	spew.Dump(changes)
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
+
 	reader := bufio.NewReader(f)
-
 	buf := bytes.NewBuffer(nil)
-
 	var lastOffset int
 
 	for _, change := range changes {
@@ -57,4 +56,24 @@ func FileApplyChanges(filename string, changes []CodeChange) ([]byte, error) {
 	io.Copy(buf, reader)
 
 	return buf.Bytes(), nil
+}
+
+// FileApplyChangesInplace is like FileApplyChanges but edits the file
+func FileApplyChangesInplace(filename string, changes []CodeChange) error {
+	content, err := FileApplyChanges(filename, changes)
+	if err != nil {
+		return fmt.Errorf("error applying changes to file %q: %v", filename, err)
+	}
+
+	f, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("error overwriting the file %q: %v", filename, err)
+	}
+
+	_, err = f.Write(content)
+	if err != nil {
+		return fmt.Errorf("error writing result to file %q: %v", filename, err)
+	}
+
+	return nil
 }

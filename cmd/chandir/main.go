@@ -57,14 +57,17 @@ func chandircheck(cmd *cobra.Command, args []string) {
 
 	apply := cmd.Flags().Lookup("apply").Value.String() == "true"
 	if apply {
-		applyChanges(changes)
+		err := applyChanges(changes)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 }
 
 func applyChanges(changes map[string][]codechange.CodeChange) error {
 	for filename, fchanges := range changes {
-		_, err := codechange.FileApplyChanges(filename, fchanges)
+		err := codechange.FileApplyChangesInplace(filename, fchanges)
 		if err != nil {
 			return err
 		}
