@@ -7,3 +7,7 @@ func e(c chan int) {
 func a(c chan int) {
 	a := <-c
 }
+
+func bb(c chan int) {
+	c <- 2
+}
