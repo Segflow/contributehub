@@ -1,4 +1,4 @@
-package main
+package repository
 
 import (
 	"fmt"
@@ -8,12 +8,12 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 )
 
-type RepositoryCloner struct {
+type Cloner struct {
 	CloneDir string
 	Depth    int
 }
 
-func (r *RepositoryCloner) Clone(repo *github.Repository) (*Repository, error) {
+func (r *Cloner) Clone(repo *github.Repository) (*Repository, error) {
 	opts := &git.CloneOptions{
 		URL:      repo.GetCloneURL(),
 		Depth:    r.Depth,
@@ -35,7 +35,8 @@ func (r *RepositoryCloner) Clone(repo *github.Repository) (*Repository, error) {
 	}
 
 	return &Repository{
-		git:        gitRepo,
-		Repository: repo,
+		git:            gitRepo,
+		Repository:     repo,
+		LocalDirectory: dir,
 	}, nil
 }

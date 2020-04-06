@@ -1,4 +1,4 @@
-package main
+package repository
 
 import (
 	"github.com/google/go-github/github"
@@ -8,4 +8,5 @@ import (
 type Repository struct {
 	git *git.Repository
 	*github.Repository
+	LocalDirectory string
 }

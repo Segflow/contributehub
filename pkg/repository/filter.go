@@ -1,4 +1,4 @@
-package main
+package repository
 
 import (
 	"fmt"
@@ -6,13 +6,13 @@ import (
 	"github.com/google/go-github/github"
 )
 
-type RepositoriesFilter struct {
+type Filter struct {
 	IncludeFork bool
 	Languages   map[string]bool
 	Ignore      map[string]bool
 }
 
-func (f *RepositoriesFilter) Check(repo *github.Repository) bool {
+func (f *Filter) Check(repo *github.Repository) bool {
 	name := fmt.Sprintf("%s/%s", repo.GetOwner().GetLogin(), repo.GetName())
 	if f.Ignore[name] {
 		return true
@@ -29,7 +29,7 @@ func (f *RepositoriesFilter) Check(repo *github.Repository) bool {
 	return true
 }
 
-func (f *RepositoriesFilter) FilterChan(in <-chan *github.Repository) chan *github.Repository {
+func (f *Filter) FilterChan(in <-chan *github.Repository) chan *github.Repository {
 	out := make(chan *github.Repository)
 	go func() {
 		for repo := range in {

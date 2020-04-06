@@ -1,4 +1,4 @@
-package discovery
+package repository
 
 import (
 	"context"
@@ -15,20 +15,20 @@ const (
 	goroutines     = 8
 )
 
-type EventRepoDiscoverer struct {
+type EventDiscoverer struct {
 	client    *github.Client
 	seenRepos map[int64]bool
 	lastETAG  string
 }
 
-func NewEventRepoDiscoverer(c *github.Client) *EventRepoDiscoverer {
-	return &EventRepoDiscoverer{
+func NewEventDiscoverer(c *github.Client) *EventDiscoverer {
+	return &EventDiscoverer{
 		client:    c,
 		seenRepos: make(map[int64]bool),
 	}
 }
 
-func (e *EventRepoDiscoverer) getNewEvents(ctx context.Context) ([]*github.Event, error) {
+func (e *EventDiscoverer) getNewEvents(ctx context.Context) ([]*github.Event, error) {
 	var events []*github.Event
 	opt := &github.ListOptions{PerPage: eventPerPage}
 
@@ -48,7 +48,7 @@ func (e *EventRepoDiscoverer) getNewEvents(ctx context.Context) ([]*github.Event
 	return events, nil
 }
 
-func (e *EventRepoDiscoverer) Discover(ctx context.Context) chan *github.Repository {
+func (e *EventDiscoverer) Discover(ctx context.Context) chan *github.Repository {
 	ch := make(chan *github.Repository)
 	go func() {
 		e.discoverLoop(ctx, ch)
@@ -56,7 +56,7 @@ func (e *EventRepoDiscoverer) Discover(ctx context.Context) chan *github.Reposit
 	return ch
 }
 
-func (e *EventRepoDiscoverer) discoverLoop(ctx context.Context, ch chan<- *github.Repository) {
+func (e *EventDiscoverer) discoverLoop(ctx context.Context, ch chan<- *github.Repository) {
 	for {
 		logrus.Info("Discovering new repositories.")
 		err := e.discover(ctx, ch)
@@ -69,7 +69,7 @@ func (e *EventRepoDiscoverer) discoverLoop(ctx context.Context, ch chan<- *githu
 	}
 }
 
-func (e *EventRepoDiscoverer) discover(ctx context.Context, ch chan<- *github.Repository) error {
+func (e *EventDiscoverer) discover(ctx context.Context, ch chan<- *github.Repository) error {
 	events, err := e.getNewEvents(ctx)
 	if err != nil {
 		return err
